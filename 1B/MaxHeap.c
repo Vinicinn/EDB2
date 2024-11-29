@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 MaxHeap inicializarLista() {
     MaxHeap listaVazia;
@@ -11,6 +12,11 @@ MaxHeap inicializarLista() {
 }
 
 MaxHeap inserirAeronave(MaxHeap heap, Aeronave novaAeronave) {
+    if (verificarIdentificador(heap, novaAeronave.identificador)) {
+        printf("\nIdentificador ja em uso\n");
+        return heap;
+    }
+
     Aeronave *novaLista = (Aeronave *)realloc(heap.lista, (heap.tamanho + 1) * sizeof(Aeronave));
     heap.lista = novaLista;
 
@@ -93,5 +99,47 @@ void heapify(Aeronave *lista, int tamanho, int i) {
         lista[maior] = temp;
 
         heapify(lista, tamanho, maior);
+    }
+}
+
+int verificarIdentificador(MaxHeap heap, char id[10]) {
+    for (int i = 0; i < heap.tamanho; i++) {
+        if (strcmp(heap.lista[i].identificador, id) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void imprimirEmOrdem(MaxHeap heap) {
+    MaxHeap heapTemp;
+    heapTemp.tamanho = heap.tamanho;
+    heapTemp.lista = (Aeronave *)malloc(heapTemp.tamanho * sizeof(Aeronave));
+    if (heapTemp.lista == NULL) {
+        printf("\nfalha ao alocar memoria.\n");
+    } else {
+        for (int i = 0; i < heapTemp.tamanho; i++) {
+            heapTemp.lista[i] = heap.lista[i];
+        }
+
+        printf("\nAeronaves em ordem\n");
+        while (heapTemp.tamanho > 0) {
+            Aeronave maior = heapTemp.lista[0];
+            printf("Identificador: %s, Combustível: %d, Horário: %d, Tipo: %d, Emergência: %d, Prioridade: %d\n",
+                   maior.identificador, maior.combustivel, maior.horario,
+                   maior.tipo, maior.emergencia, maior.prioridade);
+            heapTemp = removerRaiz(heapTemp);
+        }
+    }
+}
+
+MaxHeap atualizarAeronave(MaxHeap heap, Aeronave novaAeronave) {
+    novaAeronave.prioridade = (1000 - novaAeronave.combustivel) + (1440 - novaAeronave.horario) + (500 * novaAeronave.tipo) + (5000 * novaAeronave.emergencia);
+    for (int i = 0; i < heap.tamanho; i++) {
+        if (strcmp(heap.lista[i].identificador, novaAeronave.identificador) == 0) {
+            heap.lista[i] = novaAeronave;
+            heap = ordenarLista(heap);
+            return heap;
+        }
     }
 }
