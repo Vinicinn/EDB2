@@ -4,15 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-MaxHeap inicializarLista() {
+MaxHeap inicializarLista()
+{
     MaxHeap listaVazia;
     listaVazia.tamanho = 0;
     listaVazia.lista = (Aeronave *)malloc(sizeof(Aeronave));
     return listaVazia;
 }
 
-MaxHeap inserirAeronave(MaxHeap heap, Aeronave novaAeronave) {
-    if (verificarIdentificador(heap, novaAeronave.identificador)) {
+MaxHeap inserirAeronave(MaxHeap heap, Aeronave novaAeronave)
+{
+    if (verificarIdentificador(heap, novaAeronave.identificador))
+    {
         printf("\nIdentificador ja em uso\n");
         return heap;
     }
@@ -29,15 +32,18 @@ MaxHeap inserirAeronave(MaxHeap heap, Aeronave novaAeronave) {
     return heap;
 }
 
-MaxHeap carregarLista(MaxHeap heap) {
+MaxHeap carregarLista(MaxHeap heap)
+{
     FILE *arquivo = fopen("aeronaves.csv", "r");
-    if (arquivo == NULL) {
+    if (arquivo == NULL)
+    {
         perror("Nao foi possivel abrir o arquivo");
         return heap;
     }
 
     char linha[50];
-    while (fgets(linha, sizeof(linha), arquivo)) {
+    while (fgets(linha, sizeof(linha), arquivo))
+    {
         Aeronave nova;
 
         sscanf(linha, "%[^,],%d,%d,%d,%d",
@@ -54,15 +60,19 @@ MaxHeap carregarLista(MaxHeap heap) {
     return heap;
 }
 
-MaxHeap ordenarLista(MaxHeap heap) {
-    for (int i = (heap.tamanho - 1) / 2; i >= 0; i--) {
+MaxHeap ordenarLista(MaxHeap heap)
+{
+    for (int i = (heap.tamanho - 1) / 2; i >= 0; i--)
+    {
         heapify(heap.lista, heap.tamanho, i);
     }
     return heap;
 }
 
-MaxHeap removerRaiz(MaxHeap heap) {
-    if (heap.tamanho == 0) {
+MaxHeap removerRaiz(MaxHeap heap)
+{
+    if (heap.tamanho == 0)
+    {
         printf("Heap vazia! Nada a remover.\n");
         return heap;
     }
@@ -71,29 +81,36 @@ MaxHeap removerRaiz(MaxHeap heap) {
     heap.tamanho -= 1;
 
     Aeronave *novaLista = (Aeronave *)realloc(heap.lista, heap.tamanho * sizeof(Aeronave));
-    if (novaLista != NULL) {
-        heap.lista = novaLista;
+    if (novaLista == NULL && heap.tamanho > 0)
+    {
+        perror("Falha ao realocar memória");
+        exit(EXIT_FAILURE);
     }
+    heap.lista = novaLista;
 
     heapify(heap.lista, heap.tamanho, 0);
 
     return heap;
 }
 
-void heapify(Aeronave *lista, int tamanho, int i) {
+void heapify(Aeronave *lista, int tamanho, int i)
+{
     int maior = i;
     int esquerda = 2 * i + 1;
     int direita = 2 * i + 2;
 
-    if (esquerda < tamanho && lista[esquerda].prioridade > lista[maior].prioridade) {
+    if (esquerda < tamanho && lista[esquerda].prioridade > lista[maior].prioridade)
+    {
         maior = esquerda;
     }
 
-    if (direita < tamanho && lista[direita].prioridade > lista[maior].prioridade) {
+    if (direita < tamanho && lista[direita].prioridade > lista[maior].prioridade)
+    {
         maior = direita;
     }
 
-    if (maior != i) {
+    if (maior != i)
+    {
         Aeronave temp = lista[i];
         lista[i] = lista[maior];
         lista[maior] = temp;
@@ -102,28 +119,37 @@ void heapify(Aeronave *lista, int tamanho, int i) {
     }
 }
 
-int verificarIdentificador(MaxHeap heap, char id[10]) {
-    for (int i = 0; i < heap.tamanho; i++) {
-        if (strcmp(heap.lista[i].identificador, id) == 0) {
+int verificarIdentificador(MaxHeap heap, char id[10])
+{
+    for (int i = 0; i < heap.tamanho; i++)
+    {
+        if (strcmp(heap.lista[i].identificador, id) == 0)
+        {
             return 1;
         }
     }
     return 0;
 }
 
-void imprimirEmOrdem(MaxHeap heap) {
+void imprimirEmOrdem(MaxHeap heap)
+{
     MaxHeap heapTemp;
     heapTemp.tamanho = heap.tamanho;
     heapTemp.lista = (Aeronave *)malloc(heapTemp.tamanho * sizeof(Aeronave));
-    if (heapTemp.lista == NULL) {
+    if (heapTemp.lista == NULL)
+    {
         printf("\nfalha ao alocar memoria.\n");
-    } else {
-        for (int i = 0; i < heapTemp.tamanho; i++) {
+    }
+    else
+    {
+        for (int i = 0; i < heapTemp.tamanho; i++)
+        {
             heapTemp.lista[i] = heap.lista[i];
         }
 
         printf("\nAeronaves em ordem\n");
-        while (heapTemp.tamanho > 0) {
+        while (heapTemp.tamanho > 0)
+        {
             Aeronave maior = heapTemp.lista[0];
             printf("Identificador: %s, Combustível: %d, Horário: %d, Tipo: %d, Emergência: %d, Prioridade: %d\n",
                    maior.identificador, maior.combustivel, maior.horario,
@@ -133,10 +159,13 @@ void imprimirEmOrdem(MaxHeap heap) {
     }
 }
 
-MaxHeap atualizarAeronave(MaxHeap heap, Aeronave novaAeronave) {
+MaxHeap atualizarAeronave(MaxHeap heap, Aeronave novaAeronave)
+{
     novaAeronave.prioridade = (1000 - novaAeronave.combustivel) + (1440 - novaAeronave.horario) + (500 * novaAeronave.tipo) + (5000 * novaAeronave.emergencia);
-    for (int i = 0; i < heap.tamanho; i++) {
-        if (strcmp(heap.lista[i].identificador, novaAeronave.identificador) == 0) {
+    for (int i = 0; i < heap.tamanho; i++)
+    {
+        if (strcmp(heap.lista[i].identificador, novaAeronave.identificador) == 0)
+        {
             heap.lista[i] = novaAeronave;
             heap = ordenarLista(heap);
             return heap;
